@@ -1,0 +1,5 @@
+{
+  "name": "AI Learning Platform",
+  "description": "An adaptive learning platform for students and teachers, featuring AI-powered recommendations. Teachers can manage courses, materials, and quizzes, while students can learn, take quizzes, and receive personalized course suggestions.",
+  "requestFramePermissions": []
+}
