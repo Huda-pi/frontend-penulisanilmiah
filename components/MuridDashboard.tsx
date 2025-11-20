@@ -26,10 +26,10 @@ export const MuridDashboard: React.FC = () => {
             ]);
             
             setRecommendations(recRes);
-            setAllSubjects(subRes.data);
+            setAllSubjects(Array.isArray(subRes?.data) ? subRes.data.filter(s => s && s.id) : []);
 
         } catch (err: any) {
-            setError(err.message);
+            setError(err.message || 'Gagal memuat data materi.');
         } finally {
             setLoading(false);
         }
@@ -40,50 +40,67 @@ export const MuridDashboard: React.FC = () => {
     }, [fetchData]);
 
     if (loading) return <div className="flex justify-center mt-10"><Spinner /></div>;
+    
+    const showRecommendations = recommendations?.recommended_subjects && Array.isArray(recommendations.recommended_subjects) && recommendations.recommended_subjects.length > 0;
 
     return (
         <div className="space-y-8">
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dasbor Murid</h1>
             
-            {/* Recommendations Section */}
-            <section>
-                <h2 className="text-2xl font-semibold mb-4 text-slate-800 dark:text-slate-200">Direkomendasikan Untuk Anda</h2>
-                {error && !recommendations && (
-                    <Card>
-                        <CardContent className="text-center py-8">
-                            <p className="text-slate-500 dark:text-slate-400">{error}</p>
-                            <Button onClick={() => navigate('/preferences')} className="mt-4">
-                               Atur Preferensi
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
-                {recommendations && (
-                    <div>
-                        <p className="mb-4 text-slate-600 dark:text-slate-300">{recommendations.message}</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {recommendations.recommended_subjects.map(subject => (
-                                <SubjectCard key={subject.id} subject={subject} />
-                            ))}
-                        </div>
+            {showRecommendations ? (
+                <section>
+                    <h2 className="text-2xl font-semibold mb-4 text-slate-800 dark:text-slate-200">
+                        Rekomendasi Materi
+                    </h2>
+                    <p className="mb-4 text-slate-600 dark:text-slate-300">{recommendations!.message}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {recommendations!.recommended_subjects.map(subject => (
+                            <SubjectCard key={subject.id} subject={subject} />
+                        ))}
                     </div>
-                )}
-            </section>
+                </section>
+            ) : (
+                <section>
+                    <h2 className="text-2xl font-semibold mb-4 text-slate-800 dark:text-slate-200">
+                        Materi Tersedia
+                    </h2>
+                    
+                    {error && (
+                        <Card className="mb-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50">
+                            <CardContent className="text-center py-6">
+                                <p className="text-amber-800 dark:text-amber-200">{error}</p>
+                                <Button onClick={() => navigate('/preferences')} className="mt-4">
+                                   Atur Preferensi
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    )}
 
-            {/* All Subjects Section */}
-            <section>
-                 <h2 className="text-2xl font-semibold mb-4 text-slate-800 dark:text-slate-200">Jelajahi Semua Mata Pelajaran</h2>
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {allSubjects.map(subject => (
-                       <SubjectCard key={subject.id} subject={subject} />
-                    ))}
-                </div>
-            </section>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {allSubjects.length > 0 ? (
+                            allSubjects.map(subject => (
+                               <SubjectCard key={subject.id} subject={subject} />
+                            ))
+                        ) : (
+                            <div className="col-span-full">
+                                <Card>
+                                    <CardContent className="text-center py-10">
+                                        <p className="text-slate-500 dark:text-slate-400">
+                                            Tidak ada materi yang tersedia saat ini.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
         </div>
     );
 };
 
 const SubjectCard: React.FC<{subject: MataPelajaran}> = ({ subject }) => {
+    if (!subject) return null;
     return (
         <Link to={`/subjects/${subject.id}`} className="block group">
             <Card className="h-full transition-all duration-300 group-hover:shadow-lg group-hover:border-indigo-500 dark:group-hover:border-indigo-500 group-hover:-translate-y-1">

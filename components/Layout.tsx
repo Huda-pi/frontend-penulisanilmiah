@@ -33,7 +33,6 @@ export const Layout: React.FC<{ children: ReactNode }> = ({ children }) => {
     ) : (
         <>
             <NavItem to="/" icon={ICONS.home} label="Dasbor" onClick={closeMobileMenu} />
-            <NavItem to="/subjects" icon={ICONS.bookOpen} label="Mata Pelajaran" onClick={closeMobileMenu} />
             <NavItem to="/preferences" icon={ICONS.settings} label="Preferensi" onClick={closeMobileMenu} />
         </>
     );

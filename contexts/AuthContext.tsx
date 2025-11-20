@@ -1,5 +1,4 @@
 
-
 import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { User } from '../types';
 import { apiService } from '../services/apiService';
@@ -25,13 +24,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     try {
       const data = await apiService.get<{ authenticated: boolean, user: User }>('/api/check-auth');
-      if (data.authenticated) {
+      if (data?.authenticated && data.user) {
         setUser(data.user);
       } else {
         setUser(null);
       }
     } catch (error) {
-      console.error("Auth check failed", error);
+      // Quietly fail for initial auth check (common if offline or blocked by CORS)
+      // Console warning is better than error to avoid alarm during dev
+      console.warn("Auth check skipped or failed:", error);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -44,7 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (credentials: any) => {
     const data = await apiService.post<{ user: User }>('/api/auth/login', credentials);
-    if (data.user) {
+    if (data?.user) {
         setUser(data.user);
     }
   };
@@ -54,8 +55,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = async () => {
-    await apiService.post('/api/auth/logout', {});
-    setUser(null);
+    try {
+      await apiService.post('/api/auth/logout', {});
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      setUser(null);
+    }
   };
   
   const value = {

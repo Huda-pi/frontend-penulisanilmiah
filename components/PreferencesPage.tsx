@@ -25,10 +25,18 @@ export const PreferencesPage: React.FC = () => {
                 apiService.get<{ data: Preferensi | null }>('/api/murid/preferensi'),
                 apiService.get<{ data: MataPelajaran[] }>('/api/murid/mata-pelajaran')
             ]);
-            if (prefRes.data) {
-                setPreferences(prefRes.data);
+            
+            const fetchedSubjects = Array.isArray(subRes?.data) ? subRes.data.filter(s => s && s.id) : [];
+            // Create a copy to avoid mutating the initial constant
+            let currentPrefs = prefRes.data ? { ...prefRes.data } : { ...initialPreferences };
+
+            if (fetchedSubjects.length > 0 && !currentPrefs.mata_pelajaran_favorit) {
+                 // Optional: set default if empty, though user should pick
+                 currentPrefs.mata_pelajaran_favorit = fetchedSubjects[0].nama_mapel;
             }
-            setSubjects(subRes.data);
+
+            setPreferences(currentPrefs);
+            setSubjects(fetchedSubjects);
         } catch (error) {
             console.error("Failed to fetch preferences data", error);
             setError('Tidak dapat memuat data Anda. Silakan coba lagi nanti.');
@@ -36,6 +44,7 @@ export const PreferencesPage: React.FC = () => {
             setLoading(false);
         }
     }, []);
+
 
     useEffect(() => {
         fetchData();
@@ -69,17 +78,17 @@ export const PreferencesPage: React.FC = () => {
             <Card>
                 <CardHeader>
                     <h1 className="text-2xl font-bold">Preferensi Belajar</h1>
-                    <p className="text-slate-500 dark:text-slate-400">Bantu kami merekomendasikan mata pelajaran terbaik untuk Anda.</p>
+                    <p className="text-slate-500 dark:text-slate-400">Bantu kami merekomendasikan materi terbaik untuk Anda.</p>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <Select
-                            label="Mata Pelajaran Favorit"
+                            label="Materi Favorit"
                             name="mata_pelajaran_favorit"
                             value={preferences.mata_pelajaran_favorit}
                             onChange={handleChange}
                         >
-                            <option value="">Pilih mata pelajaran favorit Anda</option>
+                            <option value="">Pilih Materi</option>
                             {subjects.map(s => (
                                 <option key={s.id} value={s.nama_mapel}>{s.nama_mapel}</option>
                             ))}

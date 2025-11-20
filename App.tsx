@@ -45,7 +45,6 @@ const AppRoutes: React.FC = () => {
                 </Route>
 
                 <Route element={<ProtectedRoute allowedRoles={['murid']} />}>
-                    <Route path="/subjects" element={<MuridDashboard />} /> {/* Redirect to dashboard which has all subjects */}
                     <Route path="/subjects/:id" element={<SubjectPage />} />
                     <Route path="/quiz/:id" element={<QuizPage />} />
                     <Route path="/preferences" element={<PreferencesPage />} />

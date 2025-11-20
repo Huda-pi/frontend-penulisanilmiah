@@ -1,13 +1,14 @@
 
-
 import { API_BASE_URL } from '../constants';
 
 const request = async <T,>(url: string, options: RequestInit = {}): Promise<T> => {
     const defaultOptions: RequestInit = {
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
         },
         credentials: 'include', // Important for sending cookies
+        mode: 'cors',
     };
 
     const mergedOptions: RequestInit = {
@@ -33,7 +34,11 @@ const request = async <T,>(url: string, options: RequestInit = {}): Promise<T> =
         }
 
         return await response.json() as T;
-    } catch (error) {
+    } catch (error: any) {
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            console.error(`Network error requesting ${url}. This is likely a CORS issue or the server is unreachable.`);
+            throw new Error('Gagal terhubung ke server. Periksa koneksi internet Anda atau status server.');
+        }
         console.error(`API request failed: ${url}`, error);
         throw error;
     }

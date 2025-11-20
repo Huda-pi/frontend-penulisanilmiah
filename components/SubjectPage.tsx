@@ -19,25 +19,23 @@ export const SubjectPage: React.FC = () => {
         if (!id) return;
         setLoading(true);
         try {
-            // Fetch all data in parallel
             const [materialsRes, quizzesRes, allSubjectsRes] = await Promise.all([
                 apiService.get<{ data: Materi[] }>(`/api/murid/materi/${id}`),
                 apiService.get<{ data: Quiz[] }>(`/api/murid/quiz/${id}`),
                 apiService.get<{ data: MataPelajaran[] }>('/api/murid/mata-pelajaran')
             ]);
             
-            // Find the full subject details from the all subjects list
-            const currentSubject = allSubjectsRes.data.find(s => s.id === parseInt(id, 10));
+            const allSubjects = Array.isArray(allSubjectsRes?.data) ? allSubjectsRes.data.filter(s => s && s.id) : [];
+            const currentSubject = allSubjects.find(s => s.id === parseInt(id, 10));
             setSubject(currentSubject || null);
             
-            // Set materials and default active material
-            setMaterials(materialsRes.data);
-            if (materialsRes.data.length > 0) {
-                 setActiveMaterial(materialsRes.data[0]);
+            const fetchedMaterials = Array.isArray(materialsRes?.data) ? materialsRes.data.filter(m => m && m.id) : [];
+            setMaterials(fetchedMaterials);
+            if (fetchedMaterials.length > 0) {
+                 setActiveMaterial(fetchedMaterials[0]);
             }
             
-            // Set quizzes
-            setQuizzes(quizzesRes.data);
+            setQuizzes(Array.isArray(quizzesRes?.data) ? quizzesRes.data.filter(q => q && q.id) : []);
 
         } catch (err: any) {
             setError(err.message);
@@ -52,7 +50,7 @@ export const SubjectPage: React.FC = () => {
 
     if (loading) return <div className="flex justify-center mt-10"><Spinner /></div>;
     if (error) return <p className="text-red-500">{error}</p>;
-    if (!subject) return <p>Mata pelajaran tidak ditemukan.</p>;
+    if (!subject) return <p>Materi tidak ditemukan.</p>;
 
     return (
         <div className="space-y-6">
@@ -62,9 +60,9 @@ export const SubjectPage: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <aside className="lg:col-span-1 space-y-6">
-                    {/* Materials List */}
+                    {/* Materials List (Renamed to Pembahasan) */}
                     <Card>
-                        <CardHeader><h2 className="text-xl font-semibold">Materi</h2></CardHeader>
+                        <CardHeader><h2 className="text-xl font-semibold">Daftar Pembahasan</h2></CardHeader>
                         <CardContent className="p-2">
                             {materials.length > 0 ? (
                                 <ul className="space-y-1">
@@ -82,7 +80,7 @@ export const SubjectPage: React.FC = () => {
                                         </li>
                                     ))}
                                 </ul>
-                            ) : <p className="text-slate-500 p-2 text-sm text-center">Belum ada materi.</p>}
+                            ) : <p className="text-slate-500 p-2 text-sm text-center">Belum ada pembahasan.</p>}
                         </CardContent>
                     </Card>
 
@@ -123,10 +121,10 @@ export const SubjectPage: React.FC = () => {
                 <div className="lg:col-span-2">
                     <Card className="min-h-[60vh] sticky top-24">
                         <CardHeader>
-                             <h2 className="text-xl font-semibold">{activeMaterial ? activeMaterial.judul : "Pilih materi untuk dilihat"}</h2>
+                             <h2 className="text-xl font-semibold">{activeMaterial ? activeMaterial.judul : "Pilih pembahasan untuk melihat konten"}</h2>
                         </CardHeader>
                         <CardContent className="prose dark:prose-invert max-w-none prose-slate">
-                            {activeMaterial ? <p>{activeMaterial.konten}</p> : <p className="text-slate-500">Silakan pilih materi dari daftar di sebelah kiri untuk melihat isinya.</p>}
+                            {activeMaterial ? <p>{activeMaterial.konten}</p> : <p className="text-slate-500">Silakan pilih pembahasan dari daftar di sebelah kiri untuk melihat isinya.</p>}
                         </CardContent>
                     </Card>
                 </div>

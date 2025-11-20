@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
@@ -25,13 +24,14 @@ export const QuizPage: React.FC = () => {
             const resultRes = await apiService.get<QuizResultDetail>(`/api/murid/quiz/${id}/hasil`);
             
             // If score is present, it means the quiz has been taken
-            if (resultRes.score !== undefined && resultRes.score !== null) {
+            if (resultRes && resultRes.score !== undefined && resultRes.score !== null) {
                 setResult(resultRes);
             } else {
                 // If not taken, fetch the questions
                 const questionsRes = await apiService.get<{ data: Soal[] }>(`/api/murid/quiz/${id}/soal`);
-                setQuestions(questionsRes.data);
-                 if (questionsRes.data.length === 0) {
+                const fetchedQuestions = questionsRes?.data || [];
+                setQuestions(fetchedQuestions);
+                 if (fetchedQuestions.length === 0) {
                     setError("Kuis ini tidak memiliki pertanyaan.");
                 }
             }
